@@ -4,6 +4,12 @@ const Stat = ({ good, neutral, bad }) => {
 	const rawAvg = (good - bad) / total;
 	const avg = Math.round(rawAvg * 100) / 100;
 	const pos = Math.round((good / total) * 100) / 100;
+	if (total === 0)
+		return (
+			<div>
+				<h2>Statistics</h2> No feedback given
+			</div>
+		);
 	return (
 		<div id="stat">
 			<h2>Statistics</h2>
@@ -32,7 +38,7 @@ const App = () => {
 				</button>
 				<button onClick={() => setBad(bad + 1)}>😒Bad </button>
 			</div>
-      <Stat good={ good } neutral={ neutral } bad={ bad } />
+			<Stat good={good} neutral={neutral} bad={bad} />
 		</>
 	);
 };
