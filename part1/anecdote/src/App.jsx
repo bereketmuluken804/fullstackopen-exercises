@@ -15,7 +15,8 @@ const App = () => {
     const [votes, setVotes ] = useState(Array(anecdotes.length).fill(0));
 
 	function setNewIndex() {
-		const newSelect = Math.floor(8 * Math.random());
+		const num = Math.floor(8 * Math.random());
+        const newSelect = num === selected? Math.floor(8 * Math.random()): num;
 		setSelected(newSelect);
 	}
 
