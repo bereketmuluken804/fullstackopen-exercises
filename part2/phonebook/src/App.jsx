@@ -16,8 +16,14 @@ const App = () => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		const newPerson = {
-			name: newName,
+    const trimedName = newName.trim()
+    const dublicate = persons.some((person)=> person.name === trimedName)
+    if(dublicate){
+      alert(`Name ${trimedName} already exists in the phonebook`)
+      return
+    }
+    const newPerson = {
+			name: trimedName,
 			number: "",
 			id: String(persons.length + 1),
 		};
