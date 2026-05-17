@@ -1,62 +1,9 @@
 import { useState } from "react";
+import Form from "./components/Form";
+import Persons from "./components/Persons";
+import Filter from "./components/Filter";
 
-const Filter = ({ onChange, filtered }) => {
-	return (
-		<div>
-			<label htmlFor="filter">Filter by name: </label>
-			<input type="text" name="" id="" onChange={onChange} />
-			{filtered.map((person) => (
-				<li key={person.id}>
-					{person.name}: {person.number}
-				</li>
-			))}
-		</div>
-	);
-};
 
-const Form = (props) => {
-	return (
-		<form onSubmit={props.handleSubmit}>
-			<h1>Add new Phone</h1>
-
-			<label htmlFor="name">Name: </label>
-			<input
-				value={props.newName}
-				onChange={props.handleNameChange}
-				type="text"
-				name="person-name"
-				id="name"
-			/>
-
-			<div>
-				<label htmlFor="number">Number: </label>
-				<input
-					value={props.newNum}
-					onChange={props.handleNumChange}
-					type="text"
-					name="number"
-					id="number"
-				/>
-			</div>
-			<div>
-				<button type="submit">Add</button>
-			</div>
-		</form>
-	);
-};
-
-const Persons = ({ persons }) => {
-	return (
-		<>
-			<h2>Numbers</h2>
-			{persons.map((person) => (
-				<li key={person.id}>
-					{person.name}: {person.number}
-				</li>
-			))}
-		</>
-	);
-};
 const App = () => {
 	const [persons, setPersons] = useState([
 		{ name: "Arto Hellas", number: "040-123456", id: 1 },
