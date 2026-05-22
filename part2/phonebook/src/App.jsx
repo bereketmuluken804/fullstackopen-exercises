@@ -3,16 +3,16 @@ import Form from "./components/Form";
 import Persons from "./components/Persons";
 import Filter from "./components/Filter";
 import serverTools from "./service/persons";
-import Notification from "./components/Notification";
 const App = () => {
 	const [persons, setPersons] = useState([]);
 	const [newName, setNewName] = useState("");
 	const [newNum, setNewNum] = useState("");
 	const [filtered, setFiltered] = useState([]);
-	const [msg, setMsg] = useState(null);
+	const [errmsg, setErrMsg] = useState(null);
+	const [sccmsg, setSccMsg] = useState(null);
 	useEffect(() => {
 		serverTools.getPersons().then((persons) => setPersons(persons));
-	}, []);
+	}, [errmsg]);
 
 	const handleNameChange = (e) => {
 		const val = e.target.value;
@@ -75,9 +75,9 @@ const App = () => {
 			setPersons(persons.concat(addPerson));
 			setNewName("");
 			setNewNum("");
-			setMsg(`Added ${addPerson.name}`)
+			setSccMsg(`Added ${addPerson.name}`)
 			setTimeout(()=>{
-				setMsg(null)
+				setSccMsg(null)
 			}, 5000)
 		});
 	};
@@ -98,13 +98,16 @@ const App = () => {
 				setPersons((prev) =>
 					prev.filter((person) => person.id !== deleted.id),
 				);
-			});
+			}).catch(error=>{
+				setErrMsg(`${toDelete.name} was not found on the server.`)
+			})
 		}
 	};
 	return (
 		<>
 			<h1>Phonebook</h1>
-			<Notification msg={msg}/>
+			<AddedNotf msg={sccmsg} />
+			<ErrorNotf msg={errmsg} />
 			<Filter onChange={handleFilter} filtered={filtered} />
 
 			<Form
@@ -119,4 +122,24 @@ const App = () => {
 		</>
 	);
 };
+
+const AddedNotf = ({msg}) => {
+   if (!msg)
+      return
+   return (
+      <div className="success">
+         {msg}
+      </div>
+   )
+}
+
+const ErrorNotf = ({msg}) => {
+   if (!msg)
+      return
+   return (
+      <div className="error">
+         {msg}
+      </div>
+   )
+}
 export default App;
