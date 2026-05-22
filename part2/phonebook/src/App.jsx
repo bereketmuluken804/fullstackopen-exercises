@@ -51,12 +51,12 @@ const App = () => {
 			name: trimedName,
 			number: trimedNum,
 		};
-		
-		serverTools.addPerson(newPerson).then(addPerson=>{
+
+		serverTools.addPerson(newPerson).then((addPerson) => {
 			setPersons(persons.concat(addPerson));
 			setNewName("");
 			setNewNum("");
-		})
+		});
 	};
 
 	const handleFilter = (e) => {
@@ -68,7 +68,18 @@ const App = () => {
 			setFiltered([]);
 		} else setFiltered(result);
 	};
-
+	const handleDelete = (toDelete) => {
+		if (
+			window.confirm(`Are you sure you want to delete ${toDelete.name}`)
+		) {
+			serverTools.deletePerson(toDelete.id).then((deleted) => {
+				console.log(deleted);
+				setPersons((prev) =>
+					prev.filter((person) => person.id !== deleted.id),
+				);
+			});
+		}
+	};
 	return (
 		<>
 			<h1>Phonebook</h1>
@@ -83,7 +94,7 @@ const App = () => {
 				handleNumChange={handleNumChange}
 			/>
 
-			<Persons persons={persons} />
+			<Persons persons={persons} handleDelete={handleDelete} />
 		</>
 	);
 };
