@@ -16,14 +16,14 @@ const App = () => {
 
 	const handleNameChange = (e) => {
 		const val = e.target.value;
-		if (/[a-zA-Z]/.test(val)) {
+		if (val === "" || /[a-zA-Z]/.test(val)) {
 			setNewName(val);
 		}
 	};
 
 	const handleNumChange = (e) => {
 		const val = e.target.value;
-		if (/[0-9\-]/.test(val)) setNewNum(val);
+		if (/^[0-9\-]*$/.test(val)) setNewNum(val);
 	};
 
 	const handleSubmit = (e) => {
@@ -35,15 +35,34 @@ const App = () => {
 		}
 		const trimedName = newName.trim();
 		const trimedNum = newNum.trim();
-		const dublicate = persons.some((person) => person.name === trimedName);
+		const dublicatePerson = persons.find(
+			(person) => person.name === trimedName,
+		);
 
-		if (dublicate) {
-			alert(`The name '${trimedName}' already exists in the phonebook`);
+		if (dublicatePerson && dublicatePerson.number === trimedNum) {
+			alert(`'${trimedName}' already exists in the phonebook`);
+			return;
+		} else {
+			const overideNum = window.confirm(
+				`'${trimedName}'  exists in the phonebook with a different number.\nDo you want to update the number?`,
+			);
+			if (overideNum) {
+				const updatedPerson = { ...dublicatePerson, number: trimedNum };
+				serverTools.updateNumber(updatedPerson).then((updated) => {
+					setPersons((prev) =>
+						prev.map((person) =>
+							person.id === dublicatePerson.id ? updated : person,
+						),
+					);
+					setNewName("");
+					setNewNum("");
+				});
+			}
 			return;
 		}
 		const numDup = persons.some((person) => person.number === trimedNum);
 		if (numDup) {
-			alert(`The number '${trimedNum}' already exists in the phonebook`);
+			alert(`inserted number already exists`);
 			return;
 		}
 
@@ -69,9 +88,7 @@ const App = () => {
 		} else setFiltered(result);
 	};
 	const handleDelete = (toDelete) => {
-		if (
-			window.confirm(`Are you sure you want to delete ${toDelete.name}`)
-		) {
+		if (window.confirm(`Delete ${toDelete.name}`)) {
 			serverTools.deletePerson(toDelete.id).then((deleted) => {
 				console.log(deleted);
 				setPersons((prev) =>
