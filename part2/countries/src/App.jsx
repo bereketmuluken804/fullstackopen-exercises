@@ -3,7 +3,7 @@ import axios from "axios";
 const App = () => {
 	const [countries, setCountries] = useState([]);
 	const [filterWord, setFilterWord] = useState("");
-
+	const [selectedC, setSelected] = useState(null)
 	useEffect(() => {
 		axios
 			.get(
@@ -28,20 +28,27 @@ const App = () => {
 	const handleInput = (e) => {
 		const value = e.target.value
 		setFilterWord(value)
+		setSelected(null)
 	
 	}
+
+	const onShowDetails = (country) => {
+		setSelected(country)
+	}
 	const filteredC = countries.filter(country=> country.name.toLowerCase().includes(filterWord.toLowerCase()))
+	const displayC = filteredC.length === 1 ? filteredC[0] : selectedC
 	return (
 		<div>
 			<label htmlFor="inp">Find Countries</label>
 			<input type="text" id="inp" onChange={handleInput}/>
 			
-			<ShowCountries fc={filteredC} all={countries} />
+			<ShowCountries fc={filteredC} all={countries} onShowDetails={onShowDetails} />
+			{displayC  && <ShowDetail country={displayC} />}
 		</div>
 	);
 };
 
-const ShowCountries = ({fc, all}) => {
+const ShowCountries = ({fc, all, onShowDetails}) => {
 	if(all.length === 0)
 		return <h3>Loading...</h3>
 
@@ -49,10 +56,21 @@ const ShowCountries = ({fc, all}) => {
 		return <h3>Too many matches, narrow down to a specific country.</h3>
 	
 	else if(fc.length === 0)
-		return <h3>Country not found.</h3>
-	if(fc.length === 1){
-		const country = fc[0]
-		return (
+		return <h3>Country not found.</h3>	
+	
+	return (
+		<>
+		{fc.map(country=> (
+			<li key={country.name}>{country.name} 
+			<button onClick={()=> onShowDetails(country)}>Show Details</button>
+			</li>
+		))}
+		</>
+	)
+}
+
+const ShowDetail = ({country}) => {
+	return (
 			<>
 				<h1>{country.name}</h1>
 				<h3>Capital: {country.capital}</h3>
@@ -65,13 +83,5 @@ const ShowCountries = ({fc, all}) => {
 				<img src={country.flags.png} alt={country.flags.alt} />
 			</>
 		)
-	}
-	return (
-		<>
-		{fc.map(country=> (
-			<li key={country.name}>{country.name}</li>
-		))}
-		</>
-	)
 }
 export default App;
