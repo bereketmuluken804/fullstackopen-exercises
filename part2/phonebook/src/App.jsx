@@ -3,13 +3,13 @@ import Form from "./components/Form";
 import Persons from "./components/Persons";
 import Filter from "./components/Filter";
 import serverTools from "./service/persons";
-
+import Notification from "./components/Notification";
 const App = () => {
 	const [persons, setPersons] = useState([]);
 	const [newName, setNewName] = useState("");
 	const [newNum, setNewNum] = useState("");
 	const [filtered, setFiltered] = useState([]);
-
+	const [msg, setMsg] = useState(null);
 	useEffect(() => {
 		serverTools.getPersons().then((persons) => setPersons(persons));
 	}, []);
@@ -39,10 +39,7 @@ const App = () => {
 			(person) => person.name === trimedName,
 		);
 
-		if (dublicatePerson && dublicatePerson.number === trimedNum) {
-			alert(`'${trimedName}' already exists in the phonebook`);
-			return;
-		} else {
+		if (dublicatePerson && dublicatePerson.number !== trimedNum) {
 			const overideNum = window.confirm(
 				`'${trimedName}'  exists in the phonebook with a different number.\nDo you want to update the number?`,
 			);
@@ -58,6 +55,9 @@ const App = () => {
 					setNewNum("");
 				});
 			}
+			return;
+		} else if(dublicatePerson){
+			alert(`'${trimedName}' already exists in the phonebook`);
 			return;
 		}
 		const numDup = persons.some((person) => person.number === trimedNum);
@@ -75,6 +75,10 @@ const App = () => {
 			setPersons(persons.concat(addPerson));
 			setNewName("");
 			setNewNum("");
+			setMsg(`Added ${addPerson.name}`)
+			setTimeout(()=>{
+				setMsg(null)
+			}, 5000)
 		});
 	};
 
@@ -100,7 +104,7 @@ const App = () => {
 	return (
 		<>
 			<h1>Phonebook</h1>
-
+			<Notification msg={msg}/>
 			<Filter onChange={handleFilter} filtered={filtered} />
 
 			<Form
