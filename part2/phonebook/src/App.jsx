@@ -4,6 +4,7 @@ import Form from "./components/Form";
 import Persons from "./components/Persons";
 import Filter from "./components/Filter";
 
+const baseUrl = "http://localhost:3001/persons";
 const App = () => {
 	const [persons, setPersons] = useState([]);
 	const [newName, setNewName] = useState("");
@@ -11,7 +12,7 @@ const App = () => {
 	const [filtered, setFiltered] = useState([]);
 
 	useEffect(() => {
-		axios.get("http://localhost:3001/persons").then((response) => {
+		axios.get(baseUrl).then((response) => {
 			setPersons(response.data);
 		});
 	}, []);
@@ -52,11 +53,12 @@ const App = () => {
 		const newPerson = {
 			name: trimedName,
 			number: trimedNum,
-			id: String(persons.length + 1),
 		};
-		setPersons(persons.concat(newPerson));
-		setNewName("");
-		setNewNum("");
+		axios.post(baseUrl, newPerson).then((response) => {
+			setPersons(persons.concat(response.data));
+			setNewName("");
+			setNewNum("");
+		});
 	};
 
 	const handleFilter = (e) => {
