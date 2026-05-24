@@ -1,10 +1,27 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+
+const API_KEY = import.meta.env.VITE_API_KEY;
+const Base_API = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/';
+
+async function get_weather(location){
+    try {
+        const response = await fetch(`${Base_API}${location}?unitGroup=metric&key=${API_KEY}`);
+        const result = await response.json();
+        return result;
+    }
+    catch(err) {
+        msgbox.textContent = "City Not Found";
+        return null;
+    }
+}
 const App = () => {
 	const [countries, setCountries] = useState([]);
 	const [filterWord, setFilterWord] = useState("");
 	const [selectedC, setSelected] = useState(null)
 	useEffect(() => {
+		console.log("loading")
+		
 		axios
 			.get(
 				"https://studies.cs.helsinki.fi/restcountries/api/all",
@@ -20,7 +37,7 @@ const App = () => {
 						"population": entry.population
 					}
 				})
-				setCountries(filtered);
+					setCountries(filtered);
 				console.log(filtered);
 			});
 	}, []);
@@ -70,10 +87,24 @@ const ShowCountries = ({fc, all, onShowDetails}) => {
 }
 
 const ShowDetail = ({country}) => {
+	const [weather, setWeather] = useState({});
+	
+	useEffect(()=>{
+	 get_weather(country.capital[0])
+		.then(res=>{
+			const cond = res.currentConditions.conditions
+			const temp = res.currentConditions.temp;
+			const wind = res.currentConditions.windspeed;
+			setWeather({...weather, temp, cond, wind})
+	})
+	}, [])
+
+	
+	
 	return (
 			<>
 				<h1>{country.name}</h1>
-				<h3>Capital: {country.capital}</h3>
+				<h3>Capital(s): {country.capital.join(", ")}</h3>
 				<h3>Population: {country.population} </h3>
 				<h3>Area: {country.area} Sq.Km.</h3>
 				<h2>Languages</h2>
@@ -81,6 +112,10 @@ const ShowDetail = ({country}) => {
 					{Object.values(country.languages).map(lang=> <li key ={lang}>{lang}</li>)}
 				</ul>
 				<img src={country.flags.png} alt={country.flags.alt} />
+				<h2>Weather in {country.capital[0]}</h2>
+				<h3>Condition: {weather.cond} </h3>
+				<h3>Temperature: {weather.temp} Celsius </h3>
+				<h3>Wind: {weather.wind} m/s</h3>
 			</>
 		)
 }
