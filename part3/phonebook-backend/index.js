@@ -41,7 +41,7 @@ app.use(express.json())
 
 app.get('/info', (req, res) => {
    const date = new Date();
-   const day = date.toLocaleDateString('en-US', {weeday: 'short'})
+   const day = date.toLocaleDateString('en-US', {weekday: 'short'})
    const month = date.toLocaleDateString('en-US', {month: 'long'})
    const dayNumber = date.getDate();
    const year = date.getFullYear()
