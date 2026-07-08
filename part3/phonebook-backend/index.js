@@ -8,6 +8,7 @@ app.use(express.json())
 app.use(morgan('tiny', {
    skip: (req) => req.method === 'POST'
 }))
+
 morgan.token('body', (req) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :body', {
    skip: (req) => req.method !== 'POST',
