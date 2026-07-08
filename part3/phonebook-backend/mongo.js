@@ -18,7 +18,7 @@ const Person = mongoose.model("Person", schema);
 
 async function main() {
 	try {
-		await mongoose.connect(url, { family: 4 });
+		await mongoose.connect(url);
 		if (process.argv.length === 5) {
 			const name = process.argv[3];
 			const phone = process.argv[4];
