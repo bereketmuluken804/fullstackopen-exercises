@@ -10,6 +10,7 @@ const App = () => {
 	const [filtered, setFiltered] = useState([]);
 	const [errmsg, setErrMsg] = useState(null);
 	const [sccmsg, setSccMsg] = useState(null);
+	
 	useEffect(() => {
 		serverTools.getPersons().then((persons) => setPersons(persons));
 	}, [errmsg]);
@@ -94,12 +95,18 @@ const App = () => {
 	const handleDelete = (toDelete) => {
 		if (window.confirm(`Delete ${toDelete.name}`)) {
 			serverTools.deletePerson(toDelete.id).then((deleted) => {
-				console.log(deleted);
 				setPersons((prev) =>
 					prev.filter((person) => person.id !== deleted.id),
 				);
+				setSccMsg(`${toDelete.name} was deleted successfully`)
+				setTimeout(()=>{
+				setSccMsg(null)
+				}, 5000)
 			}).catch(error=>{
 				setErrMsg(`${toDelete.name} was not found on the server.`)
+				setTimeout(() => {
+					setErrMsg(null);
+				}, 5000)
 			})
 		}
 	};
