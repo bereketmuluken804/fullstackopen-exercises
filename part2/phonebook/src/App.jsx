@@ -92,21 +92,29 @@ const App = () => {
 			setFiltered([]);
 		} else setFiltered(result);
 	};
+
 	const handleDelete = (toDelete) => {
 		if (window.confirm(`Delete ${toDelete.name}`)) {
-			serverTools.deletePerson(toDelete.id).then((deleted) => {
+			serverTools.deletePerson(toDelete.id).then((result) => {
 				setPersons((prev) =>
-					prev.filter((person) => person.id !== deleted.id),
+					prev.filter((person) => person.id !== toDelete.id),
 				);
+				
 				setSccMsg(`${toDelete.name} was deleted successfully`)
 				setTimeout(()=>{
 				setSccMsg(null)
 				}, 5000)
+
 			}).catch(error=>{
+				setPersons((prev) =>
+					prev.filter((person) => person.id !== toDelete.id),
+				);
+				
 				setErrMsg(`${toDelete.name} was not found on the server.`)
 				setTimeout(() => {
 					setErrMsg(null);
 				}, 5000)
+
 			})
 		}
 	};

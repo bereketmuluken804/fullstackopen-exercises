@@ -19,29 +19,6 @@ app.use(morgan(':method :url :status :body', {
    skip: (req) => req.method !== 'POST',
 }))
 
-// const persons = [
-//    { 
-//       "id": "1",
-//       "name": "Arto Hellas", 
-//       "number": "040-123456"
-//     },
-//     { 
-//       "id": "2",
-//       "name": "Ada Lovelace", 
-//       "number": "39-44-5323523"
-//     },
-//     { 
-//       "id": "3",
-//       "name": "Dan Abramov", 
-//       "number": "12-43-234345"
-//     },
-//     { 
-//       "id": "4",
-//       "name": "Mary Poppendieck", 
-//       "number": "39-23-6423122"
-//     }
-// ]
-
 app.use(cors())
 app.use(express.json())
 
@@ -54,13 +31,15 @@ app.get('/info', (req, res) => {
    const time = date.toTimeString().split(' ')[0];
    const area = date.toTimeString().split(' ')[1];
 
+   
    const formattedString = `${day} ${month} ${dayNumber} ${year} ${time} ${area}`;
-   res.send(`<h3>Phonebook has info for ${persons.length} people</h3><h3>${formattedString}</h3>`)
+   Person.find({}).then(people=>{
+      res.send(`<p>Phonebook has info for <strong>${people.length} people</strong> </p><p>${formattedString}</p>`)
+   }).catch(err=>{
+      res.status(500).json({error: err.message})
+   })
 })
 
-app.get('/', (req, res) => {
-   res.send("<h1>Base API URL</h1>")
-})
 
 app.get('/api/persons', (req, res) => {
    Person.find({}).then(people=>{
@@ -80,7 +59,7 @@ app.get('/api/persons/:id', (req, res) => {
    })
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
    const body = req.body
    if(!body.number || !body.name)
       return res.status(400).json({error: 'name or number missing'})
@@ -97,9 +76,35 @@ app.post('/api/persons', (req, res) => {
    }).then(savedPerson=>{
       if(savedPerson)
          res.json(savedPerson)
-   }).catch(err=>{
-      res.status(500).json({error: err.message})
-   })
+   }).catch(err=>next(err))
+})
+
+app.delete('/api/persons/:id', (req, res, next) => {
+   const id = req.params.id;
+   Person.findByIdAndDelete(id).then(person=>{
+      res.status(204).end()
+   }).catch(err=>next(err))
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+   const { name, number } = req.body
+   if(!name || !number){
+      res.status(400).json({error: "missing name or phone number"})
+   }
+   const id = req.params.id
+   Person.findById(id).then(person=>{
+      if(!person){
+         res.status(404).json({error: "Person not found"})
+      }
+      person.name = name;
+      person.number = number;
+
+      return person.save()
+   }).then(savedPerson=>{
+      if (savedPerson){
+         res.json(savedPerson)
+      }
+   }).catch(err=>next(err))
 })
 
 const unknownEndpoint = (req, res) => {
@@ -107,6 +112,13 @@ const unknownEndpoint = (req, res) => {
 }
 
 app.use(unknownEndpoint)
+
+const errorHandler = (error, req, res, next)=>{
+   if(error.name === "CastError"){
+      res.status(400).json({error: "mallformatted id"})   
+   }
+}
+app.use(errorHandler)
 app.listen(PORT)
 
 console.log(`Server running on http://localhost:${PORT}`);
