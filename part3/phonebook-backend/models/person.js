@@ -1,16 +1,16 @@
-import mongoose from "mongoose";
-import { configDotenv } from "dotenv";
+import mongoose from 'mongoose'
+import { configDotenv } from 'dotenv'
 mongoose.set('strictQuery', false)
 
 configDotenv()
 const url = process.env.MONGODB_URI
 
-mongoose.connect(url, {family: 4})
+mongoose.connect(url, { family: 4 })
 
 const personSchema = new mongoose.Schema({
   name: {
     type: String,
-    minLength: [3, "min length is 3"],
+    minLength: [3, 'min length is 3'],
     required: true
   },
   number: {
@@ -21,14 +21,14 @@ const personSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valide phone number`
     },
-    minLength: [9, "min length is 8"],
+    minLength: [9, 'min length is 8'],
     maxLength: [11, 'max length is 10'],
     required: true
   }
 })
 
 personSchema.set('toJSON', {
-  transform: (document, returnedObj)=>{
+  transform: (document, returnedObj) => {
     returnedObj.id = returnedObj._id.toString()
     delete returnedObj._id
     delete returnedObj.__v
@@ -36,4 +36,4 @@ personSchema.set('toJSON', {
 })
 
 const Person = mongoose.model('Person', personSchema)
-export default Person;
+export default Person
