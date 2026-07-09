@@ -119,22 +119,22 @@ const App = () => {
 		}
 	};
 	return (
-		<>
-			<h1>Phonebook</h1>
-			<AddedNotf msg={sccmsg} />
-			<ErrorNotf msg={errmsg} />
-			<Filter onChange={handleFilter} filtered={filtered} />
-
-			<Form
-				newName={newName}
-				newNum={newNum}
-				handleSubmit={handleSubmit}
-				handleNameChange={handleNameChange}
-				handleNumChange={handleNumChange}
-			/>
-
-			<Persons persons={persons} handleDelete={handleDelete} />
-		</>
+	
+			<div className="container">
+				<h1>Phonebook</h1>
+				<AddedNotf msg={sccmsg} />
+				<ErrorNotf msg={errmsg} />
+				<Filter onChange={handleFilter} filtered={filtered} />
+				<Form
+					newName={newName}
+					newNum={newNum}
+					handleSubmit={handleSubmit}
+					handleNameChange={handleNameChange}
+					handleNumChange={handleNumChange}
+				/>
+				<Persons persons={persons} handleDelete={handleDelete} />
+			</div>
+		
 	);
 };
 
