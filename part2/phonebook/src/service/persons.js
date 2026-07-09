@@ -7,8 +7,9 @@ const getPersons = () => {
     )
 }
 
-const addPerson = (newPerson) => {
-    return axios.post(baseUrl, newPerson).then(response=>response.data)
+const addPerson = async (newPerson) => {
+    const response = await axios.post(baseUrl, newPerson);
+    return response.data;
 }
 
 const deletePerson = (id) => {

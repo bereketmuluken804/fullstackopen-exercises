@@ -21,7 +21,12 @@ const App = () => {
 			setNewName(val);
 		}
 	};
-
+	const setMsg = (msg, func) => {
+		func(msg);
+		setTimeout(() => {
+			func(null)
+		}, 5000)
+	}
 	const handleNumChange = (e) => {
 		const val = e.target.value;
 		if (/^[0-9\-]*$/.test(val)) setNewNum(val);
@@ -51,19 +56,22 @@ const App = () => {
 						prev.map((person) =>
 							person.id === dublicatePerson.id ? updated : person,
 						),
-					);
+					)
 					setNewName("");
 					setNewNum("");
-				});
+				}).catch(err=>{
+						console.log(err.response)
+						setMsg(err.response.data.error, setErrMsg)
+					})
 			}
 			return;
 		} else if(dublicatePerson){
-			alert(`'${trimedName}' already exists in the phonebook`);
+			setMsg(`'${trimedName}' already exists in the phonebook`, setErrMsg);
 			return;
 		}
 		const numDup = persons.some((person) => person.number === trimedNum);
 		if (numDup) {
-			alert(`inserted number already exists`);
+			setMsg(`inserted number already exists`, setErrMsg);
 			return;
 		}
 
@@ -76,10 +84,9 @@ const App = () => {
 			setPersons(persons.concat(addPerson));
 			setNewName("");
 			setNewNum("");
-			setSccMsg(`Added ${addPerson.name}`)
-			setTimeout(()=>{
-				setSccMsg(null)
-			}, 5000)
+			setMsg(`Added ${addPerson.name}`, setSccMsg);
+		}).catch(err=>{
+			setMsg(err.response.data.error, setErrMsg)
 		});
 	};
 
@@ -100,21 +107,14 @@ const App = () => {
 					prev.filter((person) => person.id !== toDelete.id),
 				);
 				
-				setSccMsg(`${toDelete.name} was deleted successfully`)
-				setTimeout(()=>{
-				setSccMsg(null)
-				}, 5000)
+				setMsg(`${toDelete.name} was deleted successfully`, setSccMsg)
+				
 
 			}).catch(error=>{
 				setPersons((prev) =>
 					prev.filter((person) => person.id !== toDelete.id),
 				);
-				
-				setErrMsg(`${toDelete.name} was not found on the server.`)
-				setTimeout(() => {
-					setErrMsg(null);
-				}, 5000)
-
+				setMsg(`${toDelete.name} was not found on the server.`, setErrMsg)
 			})
 		}
 	};

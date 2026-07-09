@@ -20,6 +20,7 @@ const Form = (props) => {
 					type="text"
 					name="number"
 					id="number"
+					placeholder="12-123468 or 123-3234"
 				/>
 			</div>
 			<div>

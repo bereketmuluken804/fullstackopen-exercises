@@ -61,8 +61,8 @@ app.get('/api/persons/:id', (req, res) => {
 
 app.post('/api/persons', (req, res, next) => {
    const body = req.body
-   if(!body.number || !body.name)
-      return res.status(400).json({error: 'name or number missing'})
+   // if(!body.number || !body.name)
+   //    return res.status(400).json({error: 'name or number missing'})
    
    Person.findOne({name: body.name, number: body.number}).then(dubPerson=>{
       if(dubPerson)
@@ -73,9 +73,11 @@ app.post('/api/persons', (req, res, next) => {
             number: body.number
          })
       return newPerson.save()
+
    }).then(savedPerson=>{
       if(savedPerson)
          res.json(savedPerson)
+      
    }).catch(err=>next(err))
 })
 
@@ -89,12 +91,12 @@ app.delete('/api/persons/:id', (req, res, next) => {
 app.put('/api/persons/:id', (req, res, next) => {
    const { name, number } = req.body
    if(!name || !number){
-      res.status(400).json({error: "missing name or phone number"})
+      return res.status(400).json({error: "missing name or phone number"})
    }
    const id = req.params.id
    Person.findById(id).then(person=>{
       if(!person){
-         res.status(404).json({error: "Person not found"})
+         return res.status(404).json({error: "Person not found"})
       }
       person.name = name;
       person.number = number;
@@ -116,6 +118,9 @@ app.use(unknownEndpoint)
 const errorHandler = (error, req, res, next)=>{
    if(error.name === "CastError"){
       res.status(400).json({error: "mallformatted id"})   
+   }
+   if(error.name === "ValidationError"){
+      res.status(400).json({error: error.message})
    }
 }
 app.use(errorHandler)
