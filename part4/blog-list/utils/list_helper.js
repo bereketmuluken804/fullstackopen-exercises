@@ -1,3 +1,5 @@
+import { log } from "node:console"
+
 const dummy = (blogs) => {
   return 1
 }
@@ -39,49 +41,24 @@ const mostBlogs = (blogs) => {
   return result;
 }
 
-const blogs = [
-			{
-				title: "blog1",
-				author: "bekasnow",
-				url: "https/sdfs.com",
-				likes: 32,
-				id: "6a55ffbf91b962ee76122c8c",
-			},
-			{
-				title: "blog2",
-				author: "bekasnow",
-				url: "https/sdfs.com",
-				likes: 21,
-				id: "6a560ae9b732fa3d562d8155",
-			},
-			{
-				title: "blog3",
-				author: "beka",
-				url: "https/sdfs.com",
-				likes: 32,
-				id: "6a55ffbf91b962ee76122c8c",
-			},
-			{
-				title: "blog4",
-				author: "beka",
-				url: "https/sdfs.com",
-				likes: 21,
-				id: "6a560ae9b732fa3d562d8155",
-			},
-			{
-				title: "blog5",
-				author: "bekasnow",
-				url: "https/sdfs.com",
-				likes: 32,
-				id: "6a55ffbf91b962ee76122c8c",
-			},
-			{
-				title: "blog6",
-				author: "bekasnow",
-				url: "https/sdfs.com",
-				likes: 21,
-				id: "6a560ae9b732fa3d562d8155",
-			},
-		];
+const mostLikes = (blogs) => {
+  if(blogs.length === 0){
+    return "No blog found"
+  }
 
-export { dummy, totalLikes, favoriteBlog, mostBlogs }
+  const result = blogs.reduce((acc, blog)=>{
+    const author = blog.author;
+    acc.counts[author] = (acc.counts[author] || 0) + blog.likes;
+
+    if(acc.counts[author] > acc.top.likes){
+      acc.top.author = author;
+      acc.top.likes = acc.counts[author];
+    }
+
+    return acc
+  }, {counts: {}, top: {author: "", likes: 0}}).top
+
+  return result;
+}
+
+export { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes}
