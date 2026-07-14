@@ -8,4 +8,15 @@ const totalLikes = (blogs) => {
  }, 0) 
  return likes;
 }
-export { dummy, totalLikes }
+
+const favoriteBlog = (blogs) => {
+  if(blogs.length === 0){
+    return "No favorite found"
+  }
+  const fav = blogs.reduce((favorite, blog)=>{
+    return blog.likes > favorite.likes ? blog : favorite
+  }, blogs[0])
+
+  return fav;
+}
+export { dummy, totalLikes, favoriteBlog }
