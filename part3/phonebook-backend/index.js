@@ -67,8 +67,8 @@ app.get('/api/persons/:id', (req, res) => {
 
 app.post('/api/persons', (req, res, next) => {
   const body = req.body
-  // if(!body.number || !body.name)
-  //    return res.status(400).json({error: 'name or number missing'})
+  if(!body.number || !body.name)
+     return res.status(400).json({error: 'name or number missing'})
 
   Person.findOne({ name: body.name, number: body.number })
     .then((dubPerson) => {
@@ -135,6 +135,6 @@ const errorHandler = (error, req, res, next) => {
   }
 }
 app.use(errorHandler)
-app.listen(PORT)
 
+app.listen(PORT)
 console.log(`Server running on http://localhost:${PORT}`)
