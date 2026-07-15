@@ -4,11 +4,20 @@ import config from "../utils/config.js";
 mongoose.set('strictQuery', false);
 mongoose.connect(config.DB_URL, {family: 4});
 
-const blogSchema = mongoose.Schema({
-  title: String,
+const blogSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true 
+  },
   author: String,
-  url: String,
-  likes: Number,
+  url: {
+    type: String,
+    required: true
+  },
+  likes: {
+    type: Number,
+    default: 0     
+  }
 })
 
 blogSchema.set("toJSON", {
@@ -19,5 +28,4 @@ blogSchema.set("toJSON", {
   }
 })
 const Blog = mongoose.model('Blog', blogSchema)
-
 export default Blog;
