@@ -3,9 +3,11 @@ import assert from "node:assert";
 import supertest from "supertest";
 import mongoose from "mongoose";
 import app from "../app.js";
-import Blog from "../model/blog.js";
+import Blog from "../models/blog.js";
+import User from "../models/user.js";
 
 const api = supertest(app);
+let token = null;
 
 const initialBlogs = [
 	{
@@ -24,7 +26,31 @@ const initialBlogs = [
 
 beforeEach(async () => {
 	await Blog.deleteMany({});
-	await Blog.insertMany(initialBlogs);
+	await User.deleteMany({});
+
+	// root user
+	const newUser = {
+		username: "root",
+		name: "Superuser",
+		password: "secretpassword",
+	};
+
+	await api.post("/api/users").send(newUser);
+	const user = await User.findOne({username: "root"})
+	// Log in and store token
+	const loginResponse = await api.post("/api/login").send({
+		username: "root",
+		password: "secretpassword",
+	});
+
+	token = loginResponse.body.token;
+
+	// initial blogs linked to root user
+	const blogObjs = initialBlogs.map(
+		(blog) => new Blog({ ...blog, user: user._id }),
+	);
+	const promiseArray = blogObjs.map((blog) => blog.save());
+	await Promise.all(promiseArray);
 });
 
 describe("when there is initially some blogs saved", () => {
@@ -39,33 +65,54 @@ describe("when there is initially some blogs saved", () => {
 
 	test("unique identifier property is named id instead of _id", async () => {
 		const response = await api.get("/api/blogs");
-
 		const blogs = response.body;
+
 		assert.ok(blogs[0].id);
 		assert.strictEqual(blogs[0]._id, undefined);
 	});
 });
 
 describe("addition of a new blog", () => {
-	test("a valid blog can be added", async () => {
+	test("valid data and token", async () => {
 		const newBlog = {
-			title: "Canonical string reduction",
-			author: "Edsger W. Dijkstra",
-			url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
-			likes: 12,
+			title: "New Tech",
+			author: "James",
+			url: "https://somewhere.com",
+			likes: 4,
 		};
 
 		await api
 			.post("/api/blogs")
+			.set("Authorization", `Bearer ${token}`)
 			.send(newBlog)
 			.expect(201)
 			.expect("Content-Type", /application\/json/);
 
-		const response = await api.get("/api/blogs");
-		const titles = response.body.map((r) => r.title);
+		const blogsAtEnd = await Blog.find({});
+		assert.strictEqual(blogsAtEnd.length, initialBlogs.length + 1);
+	});
 
-		assert.strictEqual(response.body.length, initialBlogs.length + 1);
-		assert.ok(titles.includes("Canonical string reduction"));
+	test("fails with status code 401 unauthorized if token not provided", async () => {
+		const newBlog = {
+			title: "Unauthorized Blog Post",
+			author: "Anonymous",
+			url: "http://example.com/unauthorized",
+			likes: 0,
+		};
+
+		const result = await api
+			.post("/api/blogs")
+			.send(newBlog)
+			.expect(401)
+			.expect("Content-Type", /application\/json/);
+
+		assert.match(
+			result.body.error,
+			/token missing|token invalid|invalid token/i,
+		);
+
+		const blogsAtEnd = await Blog.find({});
+		assert.strictEqual(blogsAtEnd.length, initialBlogs.length);
 	});
 
 	test("likes property defaults to 0 if missing from the request", async () => {
@@ -77,6 +124,7 @@ describe("addition of a new blog", () => {
 
 		const response = await api
 			.post("/api/blogs")
+			.set("Authorization", `Bearer ${token}`)
 			.send(blogWithoutLikes)
 			.expect(201);
 
@@ -90,7 +138,11 @@ describe("addition of a new blog", () => {
 			likes: 10,
 		};
 
-		await api.post("/api/blogs").send(blogWithoutTitle).expect(400);
+		await api
+			.post("/api/blogs")
+			.set("Authorization", `Bearer ${token}`) // Added token
+			.send(blogWithoutTitle)
+			.expect(400);
 
 		const response = await api.get("/api/blogs");
 		assert.strictEqual(response.body.length, initialBlogs.length);
@@ -103,7 +155,11 @@ describe("addition of a new blog", () => {
 			likes: 10,
 		};
 
-		await api.post("/api/blogs").send(blogWithoutUrl).expect(400);
+		await api
+			.post("/api/blogs")
+			.set("Authorization", `Bearer ${token}`) // Added token
+			.send(blogWithoutUrl)
+			.expect(400);
 
 		const response = await api.get("/api/blogs");
 		assert.strictEqual(response.body.length, initialBlogs.length);
@@ -111,11 +167,14 @@ describe("addition of a new blog", () => {
 });
 
 describe("deletion of a blog", () => {
-	test("succeeds with status code 204 if id is valid", async () => {
+	test("succeeds with status code 204 if id is valid and authorized", async () => {
 		const responseAtStart = await api.get("/api/blogs");
 		const blogToDelete = responseAtStart.body[0];
 
-		await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+		await api
+			.delete(`/api/blogs/${blogToDelete.id}`)
+			.set("Authorization", `Bearer ${token}`) // Added token
+			.expect(204);
 
 		const responseAtEnd = await api.get("/api/blogs");
 		assert.strictEqual(
@@ -149,6 +208,7 @@ describe("updating a blog", () => {
 		assert.strictEqual(response.body.likes, blogToUpdate.likes + 10);
 	});
 });
+
 after(async () => {
 	await mongoose.connection.close();
 });

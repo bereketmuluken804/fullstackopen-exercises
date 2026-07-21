@@ -1,14 +1,15 @@
 import express from "express";
 import mongoose from "mongoose";
 import blogRouter from "./controller/blogs.js";
+import userRouter from "./controller/users.js";
 import {
 	unknownEndpont,
 	requestLogger,
 	errorLogger,
+	userExtractor
 } from "./utils/middleware.js";
 import config from "./utils/config.js";
 import logger from "./utils/logger.js";
-import Blog from "./model/blog.js";
 
 const app = express();
 logger.info("connecting to database");
@@ -22,8 +23,9 @@ mongoose
 
 app.use(express.json());
 app.use(requestLogger);
-app.use("/api/blogs", blogRouter);
 
+app.use("/api/blogs", userExtractor,blogRouter);
+app.use("/api", userRouter);
 app.use(unknownEndpont);
 app.use(errorLogger);
 
