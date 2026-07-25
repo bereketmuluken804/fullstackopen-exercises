@@ -2,15 +2,14 @@ import { useState, useEffect } from "react";
 import Blog from "./components/Blog";
 import blogService from "./services/blogs";
 import auth from "./services/auth";
+import Togglable from "./components/Togglable";
+import NewBlogForm from "./components/NewBlogForm";
+
 const App = () => {
 	const [blogs, setBlogs] = useState([]);
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const [newBlog, setNewBlog] = useState({
-		title: "",
-		author: "",
-		url: "",
-	});
+
 	const [err, setErr] = useState(null);
 	const [scc, setScc] = useState(null);
 	const [user, setUser] = useState(null);
@@ -28,7 +27,7 @@ const App = () => {
 			.getAll()
 			.then((blogs) => setBlogs(blogs))
 			.catch((error) => {
-        setMsg(setErr, "Couldn't load blogs")
+				setMsg(setErr, "Couldn't load blogs");
 			});
 	}, []);
 
@@ -57,39 +56,38 @@ const App = () => {
 			setter(null);
 		}, 5000);
 	}
-
-	function handleChange(e) {
-		const name = e.target.name;
-		const value = e.target.value;
-		setNewBlog({ ...newBlog, [name]: value });
-	}
-
-	async function handleCreate(e) {
+	async function onLike(id) {
 		try {
-			e.preventDefault();
-			const { title, author, url } = newBlog;
-			const savedBlog = await blogService.createBlog(newBlog);
-			setMsg(setScc, "Blog Created successfully");
-			setBlogs((prev) => prev.concat(savedBlog));
-			setNewBlog({
-				title: "",
-				author: "",
-				url: "",
-			});
-		} catch (error) {
-			let msg;
-			if (error.response) msg = error.response.data.error;
-			else {
-				msg = error.message;
+			const theBlog = blogs.find((blog) => blog.id === id);
+			if (!theBlog) {
+				setMsg(setErr, "Couldn't find the blog, please try again");
 			}
-			setMsg(setErr, msg);
+			const updatedBlog = await blogService.updateLike({
+				...theBlog,
+				likes: theBlog.likes + 1,
+			});
+			setBlogs(
+				blogs.map((blog) => (blog.id === id ? updatedBlog : blog)),
+			);
+		} catch (error) {}
+	}
+	async function onDelete(id) {
+		try {
+			const blog = blogs.find(blog => blog.id === id)
+			if(!window.confirm(`Delete ${blog.title}?`)) return
+			await blogService.deleteBlog(id);
+			setBlogs(blogs.filter(blog=>blog.id !== id));
+			setMsg(setScc, `Deleted ${blog.title}`)
+		} catch (error) {
+			const msg = error.response ? error.response.data.error: error.message;
+			setMsg(setErr, msg)
 		}
 	}
-
 	const loginForm = () => (
 		<div>
 			<h1>Login to Blogs</h1>
 			{err && <p className="err-msg">{err}</p>}
+
 			<form onSubmit={handleLogin}>
 				<label htmlFor="">
 					username:
@@ -128,42 +126,25 @@ const App = () => {
 			>
 				Logout
 			</button>
-			<form onSubmit={handleCreate}>
-				<label htmlFor="">
-					Title:
-					<input
-						type="text"
-						onChange={handleChange}
-						value={newBlog.title}
-						name="title"
+			<Togglable label="New Blog">
+				<NewBlogForm
+					setMsg={setMsg}
+					setBlogs={setBlogs}
+					setErr={setErr}
+					setScc={setScc}
+				/>
+			</Togglable>
+			{[...blogs]  // sort mutates an array so work on a copy to avoid side effects
+				.sort((blog1, blog2) => blog2.likes - blog1.likes) 
+				.map((blog) => (
+					<Blog
+						key={blog.id}
+						blog={blog}
+						onLike={() => onLike(blog.id)}
+						onDelete={() => onDelete(blog.id)}
+						user= {user}
 					/>
-				</label>
-				<br />
-				<label htmlFor="">
-					Author:
-					<input
-						type="text"
-						onChange={handleChange}
-						value={newBlog.author}
-						name="author"
-					/>
-				</label>
-				<br />
-				<label htmlFor="">
-					URL:
-					<input
-						type="text"
-						onChange={handleChange}
-						value={newBlog.url}
-						name="url"
-					/>
-				</label>
-				<br />
-				<button type="submit">Create</button>
-			</form>
-			{blogs.map((blog) => (
-				<Blog key={blog.id} blog={blog} />
-			))}
+				))}
 		</div>
 	);
 

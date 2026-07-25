@@ -57,6 +57,7 @@ blogsRouter.delete("/:id", async (req, res, next) => {
 			return res.status(404).json({error: "blog not found"})
 		}
 		if(blog.user.toString() === req.user.id){
+			console.log(blog.user.toString(), req.user.id);
 			await Blog.findByIdAndDelete(req.params.id);
 			res.status(204).end();
 		}
