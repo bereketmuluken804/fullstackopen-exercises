@@ -10,6 +10,11 @@ const getAll = () => {
   const response = axios.get(baseUrl)
   return response.then(response => response.data)
 }
+
+const getBlog = (id) => {
+  const response = axios.get(`${baseUrl}/${id}`);
+  return response.then(response => response.data)
+}
 const createBlog = async (newBlog) => {
   const response = await axios.post(baseUrl, newBlog, {headers: {Authorization: token}});
   return response.data;
@@ -24,4 +29,4 @@ const deleteBlog = async (id) => {
   const response = await axios.delete(`${baseUrl}/${id}`, {headers: {Authorization: token}})
   return 
 }
-export default { getAll, createBlog, setToken, updateLike, deleteBlog}
+export default { getAll, createBlog, setToken, updateLike, deleteBlog, getBlog}

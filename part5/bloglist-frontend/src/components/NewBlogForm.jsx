@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import blogService from "../services/blogs";
-
-function NewBlogForm({handleCreate, setMsg, setBlogs, setScc, setErr}){
+function NewBlogForm({setMsg, setBlogs, setScc, setErr}){
 	const [newBlog, setNewBlog] = useState({
 			title: "",
 			author: "",
 			url: "",
 		});
+	const navigate = useNavigate();
 	
 		function handleChange(e) {
 		const name = e.target.name;
@@ -26,6 +27,7 @@ function NewBlogForm({handleCreate, setMsg, setBlogs, setScc, setErr}){
 				author: "",
 				url: "",
 			});
+			navigate('/')
 		} catch (error) {
 			let msg;
 			if (error.response) msg = error.response.data.error;

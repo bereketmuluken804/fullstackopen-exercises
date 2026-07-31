@@ -12,4 +12,9 @@ export default defineConfig({
 			},
 		},
 	},
+	test: {
+		environment: "vitest",
+		globals: true,
+		setupFiles: "./testSetup.js",
+	},
 });
