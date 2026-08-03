@@ -3,7 +3,7 @@ import {useShallow} from 'zustand/react/shallow';
 import { devtools } from 'zustand/middleware';
 import apiCalls from './services/apiCalls';
 
-const useAnecdoteStore = create((set, get)=> ({
+const useAnecdoteStore = create(devtools((set, get)=> ({
   anecdotes: [],
   newAnc: "",
   filter: "",
@@ -40,7 +40,7 @@ const useAnecdoteStore = create((set, get)=> ({
       }, 5000)
     }
   }
-}))
+})))
 
 export const useAnecdotes = () => useAnecdoteStore(useShallow(({anecdotes, filter}) => {
   const filtered = anecdotes.filter(anc => anc.content.includes(filter));
