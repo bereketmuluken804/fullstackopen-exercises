@@ -1,12 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
 const baseUrl = "http://localhost:3001/anecdotes";
 const request = async (url, options = {}) => {
-  console.log(url, options);
-  
   const response = await fetch(url, options);
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
-  return response.json();
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error)
+  return data;
 }
 
 export function useAnecdotes() {
@@ -27,6 +25,8 @@ export function useAnecdotes() {
     onSuccess: (newAnecdote) => {
       const anecdotes = queryClient.getQueryData(['anecdotes'])
       queryClient.setQueryData(['anecdotes'], anecdotes.concat(newAnecdote))
+      
+
     }
   })
 
@@ -56,10 +56,14 @@ export function useAnecdotes() {
     isLoading: result.isLoading,
     isError: result.isError,
     error: result.error,
-    create: create.mutate,
+    createAsync: create.mutateAsync,
+    isCreating: create.isPending,
+    isCreateSuccess: create.isSuccess,
+    isCreateError: create.isError,
+    createError: create.error,
     update: update.mutate,
     remove: remove.mutate,
-    isCreating: create.isPending,
+    
     isUpdating: update.isPending,
     isRemoving: remove.isPending
   }
